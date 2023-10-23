@@ -1,0 +1,50 @@
+id: template_standard_flow
+name: Template Standard Flow
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  topic:
+    type: string
+outputs:
+  ShortStorySummary:
+    type: string
+    reference: ${echo.output}
+  ShortStory:
+    type: string
+    reference: ${story.output}
+nodes:
+- name: echo
+  type: python
+  source:
+    type: code
+    path: echo.py
+  inputs:
+    summary_input: ${Summary.output}
+- name: Summary
+  type: llm
+  source:
+    type: code
+    path: summary.jinja2
+  inputs:
+    story_input: ${story.output}
+    deployment_name: completion_davinci003
+    temperature: 0.8
+    max_tokens: 256
+  provider: AzureOpenAI
+  connection: AzureOpenAIConnection
+  api: completion
+  module: promptflow.tools.aoai
+- name: story
+  type: llm
+  source:
+    type: code
+    path: story.jinja2
+  inputs:
+    deployment_name: completion_davinci003
+    temperature: 0.5
+    max_tokens: 256
+    topic: ${inputs.topic}
+  provider: AzureOpenAI
+  connection: AzureOpenAIConnection
+  api: completion
+  module: promptflow.tools.aoai

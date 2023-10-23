@@ -1,0 +1,50 @@
+inputs:
+  filepath:
+    type: string
+  pathtype:
+    type: string
+    default: 'local'
+outputs:
+  Categories:
+    type: string
+    reference: ${Classifier.output}
+  expensesdbtable_status:
+    type: string
+    reference: ${loadexpeses_azuresql.output}
+nodes:
+- name: receiptprocessing
+  type: python
+  source:
+    type: code
+    path: recieptRecogniser.py
+  inputs:
+    filepath: ${inputs.filepath}
+    connection: FormRecognizerConnection
+    pathtype: ${inputs.pathtype}
+- name: loadexpeses_azuresql
+  type: python
+  source:
+    type: code
+    path: loadSqldb.py
+  inputs:
+    reciept_input: ${receiptprocessing.output}
+    category_input: ${Classifier.output}
+    connection: AzureSQLDBConnection
+- name: Classifier
+  type: llm
+  source:
+    type: code
+    path: Classifiercopy.jinja2
+  inputs:
+    deployment_name: completion-gpt4
+    temperature: 1
+    max_tokens: 1000
+    user_input: ${receiptprocessing.output}
+  provider: AzureOpenAI
+  module: promptflow.tools.aoai
+  connection: gpt4
+  api: chat
+id: template_standard_flow
+name: Template Standard Flow
+environment:
+    python_requirements_txt: requirements.txt
