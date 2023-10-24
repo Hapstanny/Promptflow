@@ -7,10 +7,10 @@ inputs:
 outputs:
   Categories:
     type: string
-    reference: ${Classifier.output}
+    reference: ${ReceiptExpenseClassifier.output}
   expensesdbtable_status:
     type: string
-    reference: ${loadexpeses_azuresql.output}
+    reference: ${load_expenses_azuresql.output}
 nodes:
 - name: receiptprocessing
   type: python
@@ -21,16 +21,16 @@ nodes:
     filepath: ${inputs.filepath}
     connection: FormRecognizerConnection
     pathtype: ${inputs.pathtype}
-- name: loadexpeses_azuresql
+- name: load_expenses_azuresql
   type: python
   source:
     type: code
     path: loadSqldb.py
   inputs:
     reciept_input: ${receiptprocessing.output}
-    category_input: ${Classifier.output}
+    category_input: ${ReceiptExpenseClassifier.output}
     connection: AzureSQLDBConnection
-- name: Classifier
+- name: ReceiptExpenseClassifier
   type: llm
   source:
     type: code
