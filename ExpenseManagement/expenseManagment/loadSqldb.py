@@ -102,48 +102,19 @@ def loadExpenses(reciept_input:list,category_input:str,connection: CustomConnect
     try:
         engine=setup(connection)
         conn = engine.connect()
-        
-        # print(category_input)
 
-        # print(reciept_input)
-        
-        # reciept_input.pop()
         reciept_input=reciept_input[0]
-
-        print("second")
-        print(reciept_input)
-        
-
         totdf=processInputReciept(reciept_input)
         outdf=processInputCategory(category_input)
 
         outdf.set_index('item_id',inplace=True)
         totdf.set_index('item_id',inplace=True)
 
-        #sql = "UPDATE dbo.Expenses SET expense_category = ? WHERE unique_id = ?, item_id = ?"
-        #values = (category,filename,item_id)
-        #conn.execute(sql,values)
-
-
         findf=totdf.join(outdf,how='left')
         findf.reset_index(inplace=True)
-
-        
-        # findf["filename"].fillna(method="bfill",inplace=True)
-        # findf["Transdate"].fillna(method="bfill",inplace=True)
-        # findf["merchantName"].fillna(method="bfill",inplace=True)
-        # findf["item_id"].fillna(method="bfill",inplace=True)
-        # findf["item_desc"].fillna(method="bfill",inplace=True)
-        # findf["price"].fillna(method="bfill",inplace=True)
-        # findf["TotalSpend"].fillna(method="bfill",inplace=True)
-        # findf.columns=['item_id','unique_id','trans_datetime','merchant_name','item_desc','item_price','totalspend','expense_category']
-
         findf.columns=['item_id','unique_id','trans_datetime','merchant_name','item_desc','item_price','totalspend','expense_category']
 
-        print(findf)
-
         table_name = 'expenses_temp'
-
         findf.to_sql(table_name, con=conn, if_exists='replace', index=False)
         print("Data has been loaded successfully to temp table.")
 
@@ -158,16 +129,9 @@ def loadExpenses(reciept_input:list,category_input:str,connection: CustomConnect
                              )
       
         print("Data has been Merged successfully from {} table with Merged:- {} Records".format(table_name,result.rowcount))
-        #print("Data has been loaded successfully.")
-
         conn.close()
-    
         return "Expenses data has been loaded successfully in {} database".format(os.environ["SQL_SERVER_DATABASE"])
     
-        # sql = "INSERT INTO dbo.Expenses (unique_id,trans_datetime,merchant_name,item_id,item_desc,item_price,expense_category,totalspend) VALUES (?,?,?,?,?,?,?,?)"
-        # values = (findf['filename'],Transdate,merchantName,item_id,item_desc,price,expensecategory,TotalSpend)
-        # conn.execute(sql,values)
-
     except Exception as e:
         print(e) 
 
